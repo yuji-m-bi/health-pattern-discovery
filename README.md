@@ -144,3 +144,15 @@ BPX
 GLU
   +
 PAQ
+## データ結合スクリプト（自動で全XPTを対象）
+`src/merge_nhanes.py` を使うと、指定フォルダ内の `*.xpt` をすべて読み込み、`SEQN` で自動結合できます。
+
+```bash
+python src/merge_nhanes.py --data-dir data/2017_2018
+```
+
+CSV保存したい場合:
+
+```bash
+python src/merge_nhanes.py --data-dir data/2017_2018 --output data/merged/nhanes_2017_2018.csv
+```
