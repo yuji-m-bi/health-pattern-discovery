@@ -121,7 +121,13 @@ def compare_prediabetes_ratio(with_result: KMeansResult, without_result: KMeansR
         if glucose_col not in result.analyzed_df.columns:
             print(f"[{result.scenario_name}] {glucose_col} が無いため比較不可")
             continue
+
         comp = result.analyzed_df.copy()
+        comp = comp.dropna(subset=[glucose_col])
+        if comp.empty:
+            print(f"[{result.scenario_name}] {glucose_col} は存在しますが有効値がありません")
+            continue
+
         comp["predm_flag"] = (
             (comp[glucose_col] >= PREDIABETES_GLUCOSE_LOW)
             & (comp[glucose_col] <= PREDIABETES_GLUCOSE_HIGH)
@@ -153,6 +159,10 @@ def run_analysis(df: pd.DataFrame, output_dir: str = "outputs/kmeans") -> tuple[
 
     prepared_with = prepare_features_for_clustering(df, "with_glucose", with_cols, MISSING_STRATEGY, PCA_DIM)
     prepared_without = prepare_features_for_clustering(df, "without_glucose", without_cols, MISSING_STRATEGY, PCA_DIM)
+
+    # 血糖除外シナリオでも比較用に血糖列を保持する（インデックスで復元）
+    if glucose_col not in prepared_without.cleaned_df.columns and glucose_col in df.columns:
+        prepared_without.cleaned_df[glucose_col] = df.loc[prepared_without.cleaned_df.index, glucose_col]
 
     k_values = list(range(K_MIN, K_MAX + 1))
     out_dir = Path(output_dir)

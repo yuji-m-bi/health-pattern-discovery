@@ -201,3 +201,6 @@ python src/cluster_kmeans.py --input data/merged/nhanes_2017_2018.csv --output-d
 `cluster_kmeans.py` は次を保存します（with_glucose / without_glucose それぞれ）:
 - `*_kmeans_k2.png` ... `*_kmeans_k6.png`（kごとの個別図）
 - `*_kmeans_all_k.png`（k=2〜6を1枚にまとめた比較図）
+
+補足: `without_glucose` ではPCA入力から血糖列を外しますが、比較表示のため血糖列は別途保持して集計します。
+以前の `[without_glucose] LBXGLU が無いため比較不可` は実装上の保持漏れで、食事データ不足が原因ではありません。
