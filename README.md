@@ -156,3 +156,48 @@ CSV保存したい場合:
 ```bash
 python src/merge_nhanes.py --data-dir data/2017_2018 --output data/merged/nhanes_2017_2018.csv
 ```
+
+## 健康クラスタ探索（糖尿病予備群に近い集団の探索）
+
+結合済みデータに対して、PCA + KMeans で健康クラスタを探索するスクリプトを追加しています。
+
+- スクリプト: `src/nhanes_health_cluster_analysis.py`
+- 特徴:
+  - 候補列から「実在する列のみ」を自動採用
+  - 欠損処理を `drop` / `median` で切替可能
+  - PCA寄与率表示、PCA散布図、シルエット比較（k=2〜6）
+  - 血糖をPCA入力に「入れる版 / 除外版」の両方を実行
+  - クラスタ別に血糖平均と前糖尿病域割合（100〜125 mg/dL）を比較
+
+実行例:
+
+```bash
+python src/nhanes_health_cluster_analysis.py
+```
+
+`df` が notebook 上ですでにある場合は、`run_analysis(df)` を直接呼び出せます。
+
+
+## クラスタリング実行フロー（merge_nhanes.py との接続）
+
+はい、`python src/merge_nhanes.py` で作成した結合CSVを、そのままクラスタリング入力として使う前提です。
+
+1. まずXPTを結合
+```bash
+python src/merge_nhanes.py --data-dir data/2017_2018 --output data/merged/nhanes_2017_2018.csv
+```
+
+2. 次にKMeans分析（手法別ファイル）
+```bash
+python src/cluster_kmeans.py --input data/merged/nhanes_2017_2018.csv --output-dir outputs/kmeans
+```
+
+### 手法別ファイル構成
+- `src/cluster_common.py`: 前処理・列選択・PCAなど共通処理
+- `src/cluster_kmeans.py`: KMeans分析本体
+- `src/nhanes_health_cluster_analysis.py`: 後方互換ラッパー（内部でKMeansを呼び出し）
+
+### kごとの図の保存
+`cluster_kmeans.py` は次を保存します（with_glucose / without_glucose それぞれ）:
+- `*_kmeans_k2.png` ... `*_kmeans_k6.png`（kごとの個別図）
+- `*_kmeans_all_k.png`（k=2〜6を1枚にまとめた比較図）
